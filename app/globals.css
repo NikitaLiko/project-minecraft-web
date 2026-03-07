@@ -1,26 +1,97 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@theme {
+  --color-background: hsl(0 0% 7%);
+  --color-foreground: hsl(35 15% 75%);
+  --color-card: hsl(0 0% 9%);
+  --color-card-foreground: hsl(35 15% 75%);
+  --color-popover: hsl(0 0% 9%);
+  --color-popover-foreground: hsl(35 15% 75%);
+  --color-primary: hsl(35 60% 50%);
+  --color-primary-foreground: hsl(0 0% 10%);
+  --color-secondary: hsl(80 15% 20%);
+  --color-secondary-foreground: hsl(35 15% 75%);
+  --color-muted: hsl(0 0% 12%);
+  --color-muted-foreground: hsl(35 5% 50%);
+  --color-accent: hsl(80 20% 25%);
+  --color-accent-foreground: hsl(35 15% 85%);
+  --color-destructive: hsl(0 60% 40%);
+  --color-destructive-foreground: hsl(35 15% 85%);
+  --color-border: hsl(0 0% 20%);
+  --color-input: hsl(0 0% 12%);
+  --color-ring: hsl(35 60% 50%);
+  --color-olive: hsl(80 30% 25%);
+  --color-rust: hsl(25 60% 35%);
+  --color-terminal-green: hsl(120 50% 50%);
+  
+  --font-display: "Share Tech Mono", monospace;
+  --font-body: "Inter", sans-serif;
+  
+  --animate-scanline: scanline 8s linear infinite;
+  --animate-flicker: flicker 2s infinite;
+  
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+  
+  @keyframes flicker {
+    0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% { opacity: 1; }
+    20%, 21.999%, 63%, 63.999%, 65%, 69.999% { opacity: 0.4; }
   }
 }
 
+* {
+  border-color: var(--color-border);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar for that tactical feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+  border-left: 1px solid var(--color-border);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* Utility classes */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.scanlines {
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0) 50%,
+    rgba(0,0,0,0.2) 50%,
+    rgba(0,0,0,0.2)
+  );
+  background-size: 100% 4px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.crt-flicker {
+  animation: flicker 0.15s infinite;
+  pointer-events: none;
 }
