@@ -23,6 +23,20 @@ interface Translations {
     authorized_only: string;
     location: string;
     boot_sequence: string[];
+    nav_news: string;
+    nav_store: string;
+    nav_account: string;
+    scroll_down: string;
+    latest_news: string;
+    all_entries: string;
+    terminal_seq_1: string;
+    terminal_seq_2: string;
+    terminal_seq_3: string;
+    stats_title_1: string;
+    stats_title_2: string;
+    stats_desc: string;
+    server_online: string;
+    active_operatives: string;
   };
   auth: {
     login_title: string;
@@ -121,10 +135,10 @@ const translations: Record<Language, Translations> = {
     },
     landing: {
       title: 'PROJECT: MINECRAFT',
-      subtitle: 'TACTICAL OPERATIONS PLATFORM',
-      enter: 'ENTER SYSTEM',
+      subtitle: 'LARGE-SCALE SESSION COMBAT SQUAD / ARMA STYLE',
+      enter: 'ENTER GAME',
       booting: 'SYSTEM BOOTING',
-      authorized_only: 'AUTHORIZED PERSONNEL ONLY',
+      authorized_only: 'PUBLIC ACCESS SERVER',
       location: 'LAT: 59.9311 N // LON: 30.3609 E',
       boot_sequence: [
         "INITIALIZING CONNECTION...",
@@ -132,7 +146,21 @@ const translations: Record<Language, Translations> = {
         "VERIFYING ENCRYPTION...",
         "LOADING ASSETS...",
         "SYSTEM READY."
-      ]
+      ],
+      nav_news: 'NEWS',
+      nav_store: 'STORE',
+      nav_account: 'ACCOUNT',
+      scroll_down: 'SCROLL DOWN',
+      latest_news: 'LATEST NEWS',
+      all_entries: 'ALL ENTRIES [↗]',
+      terminal_seq_1: 'INITIALIZING SECURE CONNECTION...',
+      terminal_seq_2: 'CONNECTION ESTABLISHED.',
+      terminal_seq_3: 'FETCHING LATEST LEADERBOARD DATA...',
+      stats_title_1: 'LARGE-SCALE',
+      stats_title_2: 'COMBAT OPERATIONS',
+      stats_desc: 'Participate in massive session battles on huge maps. Coordinate with your squad, use vehicles and tactics to achieve victory in Battlefield and Squad style.',
+      server_online: 'Server Online',
+      active_operatives: 'Active Operatives'
     },
     auth: {
       login_title: 'SYSTEM LOGIN',
@@ -232,10 +260,10 @@ const translations: Record<Language, Translations> = {
     },
     landing: {
       title: 'PROJECT: MINECRAFT',
-      subtitle: 'ПЛАТФОРМА ТАКТИЧЕСКИХ ОПЕРАЦИЙ',
-      enter: 'ВОЙТИ В СИСТЕМУ',
+      subtitle: 'МАСШТАБНЫЕ СЕССИОННЫЕ БОИ В ФОРМАТЕ SQUAD / ARMA',
+      enter: 'ВОЙТИ В ИГРУ',
       booting: 'ЗАГРУЗКА СИСТЕМЫ',
-      authorized_only: 'ТОЛЬКО ДЛЯ АВТОРИЗОВАННЫХ',
+      authorized_only: 'СЕРВЕР ОБЩЕГО ДОСТУПА',
       location: 'ШИР: 59.9311 С // ДОЛ: 30.3609 В',
       boot_sequence: [
         "ИНИЦИАЛИЗАЦИЯ ПОДКЛЮЧЕНИЯ...",
@@ -243,7 +271,21 @@ const translations: Record<Language, Translations> = {
         "ПРОВЕРКА ШИФРОВАНИЯ...",
         "ЗАГРУЗКА РЕСУРСОВ...",
         "СИСТЕМА ГОТОВА."
-      ]
+      ],
+      nav_news: 'НОВОСТИ',
+      nav_store: 'МАГАЗИН',
+      nav_account: 'УЧЕТНАЯ ЗАПИСЬ',
+      scroll_down: 'ЛИСТАЙТЕ ВНИЗ',
+      latest_news: 'ПОСЛЕДНИЕ НОВОСТИ',
+      all_entries: 'ВСЕ ЗАПИСИ [↗]',
+      terminal_seq_1: 'ИНИЦИАЛИЗАЦИЯ БЕЗОПАСНОГО СОЕДИНЕНИЯ...',
+      terminal_seq_2: 'СОЕДИНЕНИЕ УСТАНОВЛЕНО.',
+      terminal_seq_3: 'ПОЛУЧЕНИЕ ДАННЫХ ЛИДЕРБОРДА...',
+      stats_title_1: 'Масштабные',
+      stats_title_2: 'Боевые действия',
+      stats_desc: 'Участвуйте в масштабных сессионных сражениях на огромных картах. Координируйте действия с отрядом, используйте технику и тактику для достижения победы в стиле Battlefield и Squad.',
+      server_online: 'Сервер Онлайн',
+      active_operatives: 'Активных Оперативников'
     },
     auth: {
       login_title: 'ВХОД В СИСТЕМУ',

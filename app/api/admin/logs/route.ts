@@ -1,10 +1,11 @@
-import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { verifyAdmin } from '@/lib/admin-auth';
+import { errorResponse, successResponse } from '@/lib/api-response';
 
 export async function GET(req: Request) {
   if (!(await verifyAdmin()).valid) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return errorResponse('Forbidden', 403);
   }
 
   try {
@@ -15,7 +16,7 @@ export async function GET(req: Request) {
     const success = url.searchParams.get('success');
     const search = url.searchParams.get('search') || '';
 
-    const where: any = {};
+    const where: Prisma.AuthLogWhereInput = {};
     if (source) where.source = source;
     if (success !== null && success !== '') where.success = success === 'true';
     if (search) {
@@ -35,8 +36,7 @@ export async function GET(req: Request) {
       prisma.authLog.count({ where }),
     ]);
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       logs,
       total,
       page,
@@ -44,6 +44,6 @@ export async function GET(req: Request) {
     });
   } catch (error) {
     console.error('Logs fetch error:', error);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return errorResponse('Server error', 500);
   }
 }

@@ -5,12 +5,12 @@ import { LanguageProvider } from "@/lib/i18n";
 
 const inter = Inter({
   subsets: ["latin", "cyrillic"],
-  variable: "--font-body",
+  variable: "--font-inter",
 });
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin", "cyrillic"],
-  variable: "--font-display",
+  variable: "--font-jetbrains-mono",
 });
 
 export const metadata: Metadata = {

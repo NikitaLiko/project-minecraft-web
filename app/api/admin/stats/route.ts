@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { verifyAdmin } from '@/lib/admin-auth';
+import { errorResponse, successResponse } from '@/lib/api-response';
 
 export async function GET() {
   if (!(await verifyAdmin()).valid) {
-    return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 });
+    return errorResponse('Доступ запрещен', 403);
   }
 
   try {
@@ -31,13 +31,12 @@ export async function GET() {
       }),
     ]);
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       stats: { totalUsers, bannedUsers, activeToday, newThisWeek },
       recentUsers,
     });
   } catch (error) {
     console.error('Stats error:', error);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return errorResponse('Ошибка сервера', 500);
   }
 }

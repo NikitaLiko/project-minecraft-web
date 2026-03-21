@@ -1,8 +1,3 @@
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-
-export async function POST() {
-  const cookieStore = await cookies();
-  cookieStore.delete('auth_token');
-  return NextResponse.json({ success: true });
-}
+// This route is a duplicate of /api/auth/logout.
+// Kept for backward compatibility — redirects are handled via the same logic.
+export { POST } from '@/app/api/auth/logout/route';

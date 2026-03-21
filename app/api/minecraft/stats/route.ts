@@ -1,54 +1,42 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { validateApiKey } from '@/lib/api-auth';
+import { statsUpdateSchema } from '@/lib/schemas';
+import { errorResponse, successResponse } from '@/lib/api-response';
 
 export async function POST(request: NextRequest) {
-    // Validate API key
     if (!(await validateApiKey(request))) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return errorResponse('Unauthorized', 401);
     }
 
-    let body: any;
+    let body: unknown;
     try {
         body = await request.json();
     } catch {
-        return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+        return errorResponse('Invalid JSON', 400);
+    }
+
+    const parsed = statsUpdateSchema.safeParse(body);
+    if (!parsed.success) {
+        const firstError = parsed.error.issues[0]?.message || 'Invalid data';
+        return errorResponse(firstError, 400);
     }
 
     const {
-        username,
-        uuid,
-        kills,
-        deaths,
-        wins,
-        losses,
-        damageDealt,
-        damageTaken,
-        blocksPlaced,
-        blocksBroken,
-        playTime,
-        level,
-        experience,
-        money,
-        faction,
-        isOnline,
-    } = body;
-
-    if (!username || !uuid) {
-        return NextResponse.json({ error: 'username and uuid are required' }, { status: 400 });
-    }
+        username, uuid, kills, deaths, wins, losses,
+        damageDealt, damageTaken, blocksPlaced, blocksBroken,
+        playTime, level, experience, money, faction, isOnline,
+    } = parsed.data;
 
     try {
-        // Find user by username (uuid stored in User.uuid)
-        let user = await prisma.user.findFirst({
+        const user = await prisma.user.findFirst({
             where: { OR: [{ username }, { uuid }] },
         });
 
         if (!user) {
-            return NextResponse.json({ error: 'Player not found in the website database. They must register first.' }, { status: 404 });
+            return errorResponse('Player not found in the website database. They must register first.', 404);
         }
 
-        // Upsert game profile
         const profile = await prisma.gameProfile.upsert({
             where: { userId: user.id },
             create: {
@@ -88,9 +76,9 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        return NextResponse.json({ success: true, profile });
+        return successResponse({ profile });
     } catch (error) {
         console.error('[Minecraft Stats API] Error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return errorResponse('Internal server error', 500);
     }
 }

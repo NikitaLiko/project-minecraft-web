@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { getClientIp } from '@/lib/ip';
 
 // GML Launcher Authentication Endpoint
 // Documentation: https://gml-launcher.github.io/Gml.Docs/integrations-auth-custom.html
@@ -26,7 +27,7 @@ import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 const GML_AUTH_SECRET = process.env.GML_AUTH_SECRET?.trim();
 
 export async function POST(req: Request) {
-  const ip = req.headers.get('x-real-ip') || req.headers.get('x-forwarded-for') || 'unknown';
+  const ip = getClientIp(req);
 
   const rl = rateLimit(`gml:${ip}`, 10, 60_000);
   if (!rl.allowed) return rateLimitResponse(rl.retryAfterMs);

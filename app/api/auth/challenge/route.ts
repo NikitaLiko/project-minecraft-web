@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { verifyTurnstile } from '@/lib/turnstile';
+import { getClientIp } from '@/lib/ip';
+import { errorResponse } from '@/lib/api-response';
 
 export async function POST(req: Request) {
-    const ip = req.headers.get('x-real-ip') || req.headers.get('x-forwarded-for') || 'unknown';
+    const ip = getClientIp(req);
 
     const rl = rateLimit(`challenge:${ip}`, 10, 60_000);
     if (!rl.allowed) return rateLimitResponse(rl.retryAfterMs);
@@ -12,22 +14,11 @@ export async function POST(req: Request) {
         const { token } = await req.json();
 
         if (!token) {
-            return NextResponse.json({ error: 'Captcha required' }, { status: 400 });
+            return errorResponse('Captcha required', 400);
         }
 
-        const turnstileRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                secret: process.env.TURNSTILE_SECRET_KEY,
-                response: token,
-            }),
-        });
-
-        const turnstileData = await turnstileRes.json();
-
-        if (!turnstileData.success) {
-            return NextResponse.json({ error: 'Verification failed' }, { status: 400 });
+        if (!(await verifyTurnstile(token))) {
+            return errorResponse('Verification failed', 400);
         }
 
         const response = NextResponse.json({ success: true });
@@ -44,6 +35,6 @@ export async function POST(req: Request) {
         return response;
     } catch (error) {
         console.error('Challenge error:', error);
-        return NextResponse.json({ error: 'Server error' }, { status: 500 });
+        return errorResponse('Server error', 500);
     }
 }

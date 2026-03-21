@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { verifyAdmin } from '@/lib/admin-auth';
+import { errorResponse, successResponse } from '@/lib/api-response';
+import { Role } from '@prisma/client';
 
 export async function GET(
   req: Request,
@@ -9,7 +10,7 @@ export async function GET(
 ) {
   const auth = await verifyAdmin();
   if (!auth.valid) {
-    return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 });
+    return errorResponse('Доступ запрещен', 403);
   }
 
   try {
@@ -28,7 +29,7 @@ export async function GET(
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 });
+      return errorResponse('Пользователь не найден', 404);
     }
 
     const authLogs = await prisma.authLog.findMany({
@@ -38,9 +39,9 @@ export async function GET(
     });
 
     const { password, ...safeUser } = user;
-    return NextResponse.json({ success: true, user: safeUser, authLogs });
+    return successResponse({ user: safeUser, authLogs });
   } catch (error) {
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return errorResponse('Ошибка сервера', 500);
   }
 }
 
@@ -50,7 +51,7 @@ export async function PATCH(
 ) {
   const auth = await verifyAdmin();
   if (!auth.valid) {
-    return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 });
+    return errorResponse('Доступ запрещен', 403);
   }
 
   try {
@@ -58,22 +59,28 @@ export async function PATCH(
     const body = await req.json();
     const { username, email, role, isBanned, password } = body;
 
-    const updateData: any = {};
+    const updateData: {
+      username?: string;
+      email?: string;
+      role?: Role;
+      isBanned?: boolean;
+      password?: string;
+    } = {};
     if (username) updateData.username = username;
     if (email) updateData.email = email;
-    if (role) updateData.role = role;
+    if (role && Object.values(Role).includes(role)) updateData.role = role as Role;
     if (typeof isBanned === 'boolean') updateData.isBanned = isBanned;
     if (password) updateData.password = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.update({
+    await prisma.user.update({
       where: { id: parseInt(id) },
       data: updateData,
     });
 
-    return NextResponse.json({ success: true, message: 'Пользователь обновлен' });
+    return successResponse({ message: 'Пользователь обновлен' });
   } catch (error) {
     console.error('Update user error:', error);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return errorResponse('Ошибка сервера', 500);
   }
 }
 
@@ -83,7 +90,7 @@ export async function DELETE(
 ) {
   const auth = await verifyAdmin();
   if (!auth.valid) {
-    return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 });
+    return errorResponse('Доступ запрещен', 403);
   }
 
   try {
@@ -91,16 +98,16 @@ export async function DELETE(
     const userId = parseInt(id);
 
     if (auth.valid && auth.userId === userId) {
-      return NextResponse.json({ error: 'Нельзя удалить себя' }, { status: 400 });
+      return errorResponse('Нельзя удалить себя', 400);
     }
 
     await prisma.gameProfile.deleteMany({ where: { userId } });
     await prisma.session.deleteMany({ where: { userId } });
     await prisma.user.delete({ where: { id: userId } });
 
-    return NextResponse.json({ success: true, message: 'Пользователь удален' });
+    return successResponse({ message: 'Пользователь удален' });
   } catch (error) {
     console.error('Delete user error:', error);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return errorResponse('Ошибка сервера', 500);
   }
 }

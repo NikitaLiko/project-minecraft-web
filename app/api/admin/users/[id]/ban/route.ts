@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { verifyAdmin } from '@/lib/admin-auth';
+import { errorResponse, successResponse } from '@/lib/api-response';
 
 export async function POST(
   req: Request,
@@ -8,7 +8,7 @@ export async function POST(
 ) {
   const auth = await verifyAdmin();
   if (!auth.valid) {
-    return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 });
+    return errorResponse('Доступ запрещен', 403);
   }
 
   try {
@@ -20,12 +20,12 @@ export async function POST(
     const banType = url.searchParams.get('type') || 'account'; // 'account' or 'hwid'
 
     if (auth.valid && auth.userId === userId) {
-      return NextResponse.json({ error: 'Нельзя заблокировать себя' }, { status: 400 });
+      return errorResponse('Нельзя заблокировать себя', 400);
     }
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-      return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 });
+      return errorResponse('Пользователь не найден', 404);
     }
 
     if (banType === 'hwid' && user.hardwareId) {
@@ -34,17 +34,17 @@ export async function POST(
         where: { hardwareId: user.hardwareId },
         data: { isBanned: true, isHwidBanned: true },
       });
-      return NextResponse.json({ success: true, message: 'HWID заблокирован' });
+      return successResponse({ message: 'HWID заблокирован' });
     } else {
       // Regular account ban
       await prisma.user.update({
         where: { id: userId },
         data: { isBanned: true },
       });
-      return NextResponse.json({ success: true, message: 'Аккаунт заблокирован' });
+      return successResponse({ message: 'Аккаунт заблокирован' });
     }
   } catch (error) {
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return errorResponse('Ошибка сервера', 500);
   }
 }
 
@@ -54,7 +54,7 @@ export async function DELETE(
 ) {
   const auth = await verifyAdmin();
   if (!auth.valid) {
-    return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 });
+    return errorResponse('Доступ запрещен', 403);
   }
 
   try {
@@ -64,8 +64,8 @@ export async function DELETE(
       data: { isBanned: false },
     });
 
-    return NextResponse.json({ success: true, message: 'Пользователь разблокирован' });
+    return successResponse({ message: 'Пользователь разблокирован' });
   } catch (error) {
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return errorResponse('Ошибка сервера', 500);
   }
 }

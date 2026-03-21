@@ -12,18 +12,36 @@ warn() { echo -e "  ${YEL}!${RST} $1"; }
 fail() { echo -e "  ${RED}✗${RST} $1"; ERRORS=$((ERRORS+1)); }
 
 ERRORS=0
+USE_DOCKER=false
+if command -v docker &>/dev/null && docker compose ps --status running 2>/dev/null | grep -q "warborn"; then
+    USE_DOCKER=true
+fi
 
 echo -e "\n${CYN}═══ WARBORN HEALTH CHECK ═══${RST}\n"
 
 # --- Services ---
 echo -e "${CYN}[Services]${RST}"
-for svc in warborn warborn-skins nginx mariadb; do
-    if systemctl is-active --quiet "$svc"; then
-        ok "$svc active"
-    else
-        fail "$svc DOWN"
+if [ "$USE_DOCKER" = true ]; then
+    for ctr in app db; do
+        if docker compose ps --status running 2>/dev/null | grep -q "$ctr"; then
+            ok "docker:$ctr running"
+        else
+            fail "docker:$ctr DOWN"
+        fi
+    done
+    # Also check nginx if running on host
+    if systemctl is-active --quiet nginx 2>/dev/null; then
+        ok "nginx active"
     fi
-done
+else
+    for svc in warborn warborn-skins nginx mariadb; do
+        if systemctl is-active --quiet "$svc"; then
+            ok "$svc active"
+        else
+            fail "$svc DOWN"
+        fi
+    done
+fi
 
 # --- HTTP ---
 echo -e "\n${CYN}[HTTP Endpoints]${RST}"

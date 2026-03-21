@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server';
 import { verifyAdmin } from '@/lib/admin-auth';
 import prisma from '@/lib/prisma';
 import { settingsSchema } from '@/lib/schemas';
+import { errorResponse, successResponse } from '@/lib/api-response';
 
 export async function GET() {
     if (!(await verifyAdmin()).valid) {
-        return NextResponse.json({ error: 'Access Denied' }, { status: 403 });
+        return errorResponse('Access Denied', 403);
     }
 
     const config = await prisma.systemConfig.upsert({
@@ -14,12 +14,12 @@ export async function GET() {
         create: { id: 'config' }
     });
 
-    return NextResponse.json(config);
+    return successResponse({ config });
 }
 
 export async function POST(req: Request) {
     if (!(await verifyAdmin()).valid) {
-        return NextResponse.json({ error: 'Access Denied' }, { status: 403 });
+        return errorResponse('Access Denied', 403);
     }
 
     try {
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
         const parsed = settingsSchema.safeParse(body);
         if (!parsed.success) {
             const firstError = parsed.error.issues[0]?.message || 'Invalid settings';
-            return NextResponse.json({ error: firstError }, { status: 400 });
+            return errorResponse(firstError, 400);
         }
         const { maintenanceMode, serverIp, serverPort, rconPort, rconPassword } = parsed.data;
 
@@ -50,8 +50,8 @@ export async function POST(req: Request) {
             }
         });
 
-        return NextResponse.json({ success: true, config });
+        return successResponse({ config });
     } catch (error) {
-        return NextResponse.json({ error: 'Failed to save settings' }, { status: 500 });
+        return errorResponse('Failed to save settings', 500);
     }
 }

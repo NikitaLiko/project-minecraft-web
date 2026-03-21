@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { verifyAdmin } from '@/lib/admin-auth';
+import { errorResponse, successResponse } from '@/lib/api-response';
 
 export async function GET() {
   if (!(await verifyAdmin()).valid) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return errorResponse('Forbidden', 403);
   }
 
   try {
@@ -60,16 +60,15 @@ export async function GET() {
       where: { createdAt: { gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()) } }
     });
 
-    const serialize = (arr: any[]) => arr.map(item => {
-      const obj: any = {};
+    const serialize = (arr: Array<Record<string, unknown>>) => arr.map(item => {
+      const obj: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(item)) {
         obj[key] = typeof value === 'bigint' ? Number(value) : value;
       }
       return obj;
     });
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       registrations: serialize(registrations),
       authAttempts: serialize(authAttempts),
       authBySource: serialize(authBySource),
@@ -79,6 +78,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Analytics error:', error);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return errorResponse('Server error', 500);
   }
 }

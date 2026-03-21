@@ -1,37 +1,28 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { validateApiKey } from '@/lib/api-auth';
-
-// Event types the mod can send
-type EventType = 'kill' | 'death' | 'join' | 'leave' | 'win' | 'loss';
-
-interface EventBody {
-    username: string;
-    uuid: string;
-    event: EventType;
-    // Optional extra data
-    victim?: string;       // for kill events
-    killer?: string;       // for death events
-    damageDealt?: number;  // for kill events
-    damageTaken?: number;  // for death events
-}
+import { eventSchema } from '@/lib/schemas';
+import { errorResponse, successResponse } from '@/lib/api-response';
 
 export async function POST(request: NextRequest) {
     if (!(await validateApiKey(request))) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return errorResponse('Unauthorized', 401);
     }
 
-    let body: EventBody;
+    let body: unknown;
     try {
         body = await request.json();
     } catch {
-        return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+        return errorResponse('Invalid JSON', 400);
     }
 
-    const { username, uuid, event } = body;
-    if (!username || !uuid || !event) {
-        return NextResponse.json({ error: 'username, uuid, and event are required' }, { status: 400 });
+    const parsed = eventSchema.safeParse(body);
+    if (!parsed.success) {
+        const firstError = parsed.error.issues[0]?.message || 'Invalid data';
+        return errorResponse(firstError, 400);
     }
+
+    const { username, uuid, event } = parsed.data;
 
     try {
         const user = await prisma.user.findFirst({
@@ -39,20 +30,20 @@ export async function POST(request: NextRequest) {
         });
 
         if (!user) {
-            return NextResponse.json({ error: 'Player not found' }, { status: 404 });
+            return errorResponse('Player not found', 404);
         }
 
         // Build the increment object based on event type
-        const updateData: Record<string, any> = { lastSeen: new Date() };
+        const updateData: Record<string, unknown> = { lastSeen: new Date() };
 
         switch (event) {
             case 'kill':
                 updateData.kills = { increment: 1 };
-                if (body.damageDealt) updateData.damageDealt = { increment: body.damageDealt };
+                if (parsed.data.damageDealt) updateData.damageDealt = { increment: parsed.data.damageDealt };
                 break;
             case 'death':
                 updateData.deaths = { increment: 1 };
-                if (body.damageTaken) updateData.damageTaken = { increment: body.damageTaken };
+                if (parsed.data.damageTaken) updateData.damageTaken = { increment: parsed.data.damageTaken };
                 break;
             case 'win':
                 updateData.wins = { increment: 1 };
@@ -66,8 +57,6 @@ export async function POST(request: NextRequest) {
             case 'leave':
                 updateData.isOnline = false;
                 break;
-            default:
-                return NextResponse.json({ error: 'Unknown event type' }, { status: 400 });
         }
 
         await prisma.gameProfile.upsert({
@@ -84,9 +73,9 @@ export async function POST(request: NextRequest) {
             update: updateData,
         });
 
-        return NextResponse.json({ success: true, event });
+        return successResponse({ event });
     } catch (error) {
         console.error('[Event API] Error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return errorResponse('Internal server error', 500);
     }
 }

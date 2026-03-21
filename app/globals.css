@@ -24,8 +24,8 @@
   --color-rust: hsl(25 60% 35%);
   --color-terminal-green: hsl(120 50% 50%);
   
-  --font-display: "Share Tech Mono", monospace;
-  --font-body: "Inter", sans-serif;
+  --font-display: var(--font-jetbrains-mono), monospace;
+  --font-body: var(--font-inter), sans-serif;
   
   --animate-scanline: scanline 8s linear infinite;
   --animate-flicker: flicker 2s infinite;

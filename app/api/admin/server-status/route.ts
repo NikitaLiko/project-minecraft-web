@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
 import net from 'net';
 import os from 'os';
 import { verifyAdmin } from '@/lib/admin-auth';
+import { errorResponse, successResponse } from '@/lib/api-response';
 
 function checkPort(host: string, port: number, timeout = 3000): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -16,7 +16,7 @@ function checkPort(host: string, port: number, timeout = 3000): Promise<number> 
 
 export async function POST(req: Request) {
   if (!(await verifyAdmin()).valid) {
-    return NextResponse.json({ error: 'Access Denied' }, { status: 403 });
+    return errorResponse('Access Denied', 403);
   }
 
   try {
@@ -24,10 +24,10 @@ export async function POST(req: Request) {
 
     const port = parseInt(serverPort) || 25565;
     if (serverIp && !/^[a-zA-Z0-9.-]+$/.test(serverIp)) {
-      return NextResponse.json({ error: 'Invalid IP/Hostname' }, { status: 400 });
+      return errorResponse('Invalid IP/Hostname', 400);
     }
     if (isNaN(port) || port < 1 || port > 65535) {
-      return NextResponse.json({ error: 'Invalid Port' }, { status: 400 });
+      return errorResponse('Invalid Port', 400);
     }
 
     const cpuUsage = os.loadavg()[0];
@@ -51,8 +51,7 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       system: {
         cpu: cpuPercent,
         memory: memPercent,
@@ -68,6 +67,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('Server status error:', error);
-    return NextResponse.json({ success: false, error: 'Ошибка проверки' }, { status: 500 });
+    return errorResponse('Ошибка проверки', 500);
   }
 }

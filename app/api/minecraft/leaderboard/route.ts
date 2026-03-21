@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
+import { errorResponse, successResponse } from '@/lib/api-response';
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -35,9 +36,9 @@ export async function GET(request: NextRequest) {
             isOnline: p.isOnline,
         }));
 
-        return NextResponse.json({ leaderboard, sortBy: orderField, total: leaderboard.length });
+        return successResponse({ leaderboard, sortBy: orderField, total: leaderboard.length });
     } catch (error) {
         console.error('[Leaderboard API] Error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return errorResponse('Internal server error', 500);
     }
 }

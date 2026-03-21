@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-          { key: "Content-Security-Policy", value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' https://pjm.likonchik.xyz data:; frame-src https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com;" },
+          { key: "Content-Security-Policy", value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' https://pjm.likonchik.xyz https://placehold.co data: blob:; font-src 'self' data:; frame-src https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com;" },
         ],
       },
     ];

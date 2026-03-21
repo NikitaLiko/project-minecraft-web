@@ -8,7 +8,7 @@ function getBaseUrl(request: NextRequest): string {
     return `${proto}://${host}`;
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const baseUrl = getBaseUrl(request);
 
@@ -28,7 +28,8 @@ export function middleware(request: NextRequest) {
 
     const isVerified = request.cookies.get('cf_verified');
 
-    if (!isVerified) {
+    // Allow landing page (/) to be viewed without Cloudflare challenge
+    if (!isVerified && pathname !== '/') {
         const url = new URL('/challenge', baseUrl);
         url.searchParams.set('callbackUrl', pathname);
         return NextResponse.redirect(url);
@@ -49,6 +50,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        '/((?!api|_next/static|_next/image|favicon.ico|favicon.svg).*)',
+        '/((?!api|_next/static|_next/image|favicon.ico|favicon.svg|placeholder).*)',
     ],
 };

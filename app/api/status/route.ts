@@ -3,7 +3,16 @@ import prisma from '@/lib/prisma';
 import { pingServer } from '@/lib/mc-ping';
 import { getTps } from '@/lib/rcon';
 
-let cache: { data: any; ts: number } = { data: null, ts: 0 };
+interface StatusData {
+    online: boolean;
+    players: { online: number; max: number; sample?: { name: string; id: string }[] };
+    tps: number;
+    ping: number;
+    maintenance: boolean;
+    history: number[];
+}
+
+let cache: { data: StatusData | null; ts: number } = { data: null, ts: 0 };
 let lastCleanup = 0;
 
 const CACHE_TTL = 10_000;
@@ -47,7 +56,7 @@ export async function GET() {
                 : Promise.resolve()
         ]);
 
-        const responseData = {
+        const responseData: StatusData = {
             online: status.online,
             players: status.players,
             tps: currentTps,

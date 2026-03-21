@@ -1,48 +1,43 @@
-import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
-import { getJwtSecret } from '@/lib/jwt';
+import { getAuthUser } from '@/lib/auth';
+import { errorResponse, successResponse } from '@/lib/api-response';
+import { changePasswordSchema } from '@/lib/schemas';
 
 export async function PATCH(req: Request) {
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
+  const auth = await getAuthUser();
 
-    if (!token) {
-      return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
+  if (!auth.authenticated) {
+    return errorResponse('Не авторизован', 401);
+  }
+
+  if (auth.user.isBanned) {
+    return errorResponse('Аккаунт заблокирован', 403);
+  }
+
+  try {
+    const body = await req.json();
+    const parsed = changePasswordSchema.safeParse(body);
+    if (!parsed.success) {
+      const firstError = parsed.error.issues[0]?.message || 'Некорректные данные';
+      return errorResponse(firstError, 400);
     }
 
-    const decoded = jwt.verify(token, getJwtSecret()) as { userId: number };
+    const { currentPassword, newPassword } = parsed.data;
 
+    // Need password hash — getAuthUser strips it, so fetch directly
     const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: { id: true, password: true, isBanned: true },
+      where: { id: auth.user.id },
+      select: { id: true, password: true },
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 });
-    }
-
-    if (user.isBanned) {
-      return NextResponse.json({ error: 'Аккаунт заблокирован' }, { status: 403 });
-    }
-
-    const body = await req.json();
-    const { currentPassword, newPassword } = body;
-
-    if (!currentPassword || !newPassword) {
-      return NextResponse.json({ error: 'Все поля обязательны' }, { status: 400 });
-    }
-
-    if (newPassword.length < 8) {
-      return NextResponse.json({ error: 'Минимум 8 символов' }, { status: 400 });
+      return errorResponse('Пользователь не найден', 404);
     }
 
     const isValid = await bcrypt.compare(currentPassword, user.password);
     if (!isValid) {
-      return NextResponse.json({ error: 'Неверный текущий пароль' }, { status: 400 });
+      return errorResponse('Неверный текущий пароль', 400);
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -51,9 +46,9 @@ export async function PATCH(req: Request) {
       data: { password: hashedPassword },
     });
 
-    return NextResponse.json({ success: true, message: 'Пароль изменён' });
+    return successResponse({ message: 'Пароль изменён' });
   } catch (error) {
     console.error('[API] /api/profile/password error:', error);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return errorResponse('Ошибка сервера', 500);
   }
 }

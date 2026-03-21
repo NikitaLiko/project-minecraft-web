@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { verifyAdmin } from '@/lib/admin-auth';
+import { errorResponse, successResponse } from '@/lib/api-response';
 
 export async function GET() {
   if (!(await verifyAdmin()).valid) {
-    return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 });
+    return errorResponse('Доступ запрещен', 403);
   }
 
   try {
@@ -14,9 +14,9 @@ export async function GET() {
     });
 
     const safeUsers = users.map(({ password, ...user }) => user);
-    return NextResponse.json({ success: true, users: safeUsers });
+    return successResponse({ users: safeUsers });
   } catch (error) {
     console.error('Get users error:', error);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return errorResponse('Ошибка сервера', 500);
   }
 }
