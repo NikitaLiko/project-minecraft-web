@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  uuid         String    @unique @default(uuid())
+  username     String    @unique
+  email        String    @unique
+  password     String
+  role         Role      @default(USER)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastLogin    DateTime?
+  ipAddress    String?
+  hardwareId   String? // For HWID bans/checks
+  isBanned     Boolean   @default(false)
+  isHwidBanned Boolean   @default(false) // HWID ban - blocks all accounts with same HWID
+
+  profile  GameProfile?
+  sessions Session[]
+
+  @@map("users")
+}
+
+model GameProfile {
+  id           Int       @id @default(autoincrement())
+  userId       Int       @unique
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nickname     String? // In-game name if different
+  level        Int       @default(1)
+  experience   Int       @default(0)
+  money        Int       @default(0)
+  faction      String? // USEC/BEAR equivalent
+  playTime     Int       @default(0) // In minutes
+  kills        Int       @default(0)
+  deaths       Int       @default(0)
+  wins         Int       @default(0)
+  losses       Int       @default(0)
+  damageDealt  Float     @default(0)
+  damageTaken  Float     @default(0)
+  blocksPlaced Int       @default(0)
+  blocksBroken Int       @default(0)
+  lastSeen     DateTime?
+  isOnline     Boolean   @default(false)
+
+  @@map("game_profiles")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model News {
+  id        Int      @id @default(autoincrement())
+  title     String
+  slug      String   @unique
+  content   String   @db.Text
+  image     String?
+  published Boolean  @default(true)
+  author    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("news")
+}
+
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+model SystemConfig {
+  id              String   @id @default("config")
+  maintenanceMode Boolean  @default(false)
+  serverIp        String?  @default("pl1.hoxen.one")
+  serverPort      Int      @default(25567)
+  rconPort        Int?     @default(25651)
+  rconPassword    String?
+  updatedAt       DateTime @updatedAt
+
+  @@map("system_config")
+}
+
+model ServerMetric {
+  id        Int      @id @default(autoincrement())
+  tps       Float
+  online    Int
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("server_metrics")
+}
+
+model ApiKey {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  name      String // e.g. "minecraft-server"
+  createdAt DateTime @default(now())
+
+  @@map("api_keys")
+}
+
+model AuthLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  username  String
+  ip        String?
+  source    String   // "web" or "launcher"
+  success   Boolean
+  message   String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId])
+  @@index([username])
+  @@map("auth_logs")
+}
