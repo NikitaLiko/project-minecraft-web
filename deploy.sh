@@ -70,7 +70,7 @@ deploy_docker() {
   docker compose up -d
 
   echo "=== [docker 4b/5] sync _next/static и public на хост (nginx отдаёт их с диска)"
-  CID="$(docker compose ps -q pjm-web)"
+  CID="$(docker compose ps -q app)"
   mkdir -p "$STATIC_DIR" "$PUBLIC_DIR"
   docker cp "${CID}:/app/.next/static/." "$STATIC_DIR/"
   docker cp "${CID}:/app/public/." "$PUBLIC_DIR/"

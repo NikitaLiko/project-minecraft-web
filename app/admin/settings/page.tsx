@@ -15,6 +15,7 @@ export default function SettingsPage() {
     sizeMB: number | null;
     remote?: boolean;
     remoteUrl?: string;
+    publicPath?: string;
     hint?: string;
   } | null>(null);
   const [launcherUploading, setLauncherUploading] = useState(false);
@@ -42,6 +43,7 @@ export default function SettingsPage() {
           sizeMB: data.sizeMB ?? null,
           remote: data.remote,
           remoteUrl: data.remoteUrl,
+          publicPath: data.publicPath,
           hint: data.hint,
         });
       }
@@ -296,13 +298,21 @@ export default function SettingsPage() {
                 {launcherStatus.exists ? (
                   <div className="space-y-0.5">
                     <span className="text-green-500 block">
-                      ✓ {launcherStatus.remote ? t.admin.launcher_cdn : t.admin.launcher_uploaded}
+                      ✓{' '}
+                      {launcherStatus.remote
+                        ? t.admin.launcher_cdn
+                        : launcherStatus.publicPath
+                          ? t.admin.launcher_public_folder
+                          : t.admin.launcher_uploaded}
                       {launcherStatus.sizeMB != null
                         ? ` — ${t.admin.launcher_size}: ${launcherStatus.sizeMB} MB`
                         : ''}
                     </span>
                     {launcherStatus.remote && launcherStatus.remoteUrl && (
                       <span className="block text-[10px] opacity-80 break-all">{launcherStatus.remoteUrl}</span>
+                    )}
+                    {!launcherStatus.remote && launcherStatus.publicPath && (
+                      <span className="block text-[10px] opacity-80 break-all">{launcherStatus.publicPath}</span>
                     )}
                   </div>
                 ) : (

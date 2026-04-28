@@ -128,6 +128,7 @@ interface Translations {
     launcher_not_uploaded: string;
     launcher_size: string;
     launcher_cdn: string;
+    launcher_public_folder: string;
   };
 }
 
@@ -260,12 +261,13 @@ const translations: Record<Language, Translations> = {
       launcher: 'LAUNCHER',
       launcher_upload: 'UPLOAD LAUNCHER',
       launcher_upload_hint:
-        'Archive or .exe (max 150 MB). On Cloudflare set LAUNCHER_DOWNLOAD_URL or R2 + LAUNCHER_PUBLIC_URL_BASE; optional upload to R2 with LAUNCHER_R2_* keys.',
+        'Archive or .exe (max 150 MB). Easiest on VPS: copy the file to public/launcher/ on the server (served as /launcher/…, no upload limit). Or set LAUNCHER_DOWNLOAD_URL / R2 + LAUNCHER_PUBLIC_URL_BASE; LAUNCHER_R2_* for R2 upload.',
       launcher_select_file: 'SELECT FILE (.EXE / .ZIP / .7Z)',
       launcher_uploaded: 'Launcher uploaded',
       launcher_not_uploaded: 'Not uploaded',
       launcher_size: 'Size',
       launcher_cdn: 'Launcher file on CDN (R2)',
+      launcher_public_folder: 'Launcher in public/launcher (static)',
     }
   },
   ru: {
@@ -396,12 +398,13 @@ const translations: Record<Language, Translations> = {
       launcher: 'ЛАУНЧЕР',
       launcher_upload: 'ЗАГРУЗИТЬ ЛАУНЧЕР',
       launcher_upload_hint:
-        'Архив или .exe (макс. 150 МБ). На Cloudflare задайте LAUNCHER_DOWNLOAD_URL или R2 + LAUNCHER_PUBLIC_URL_BASE; загрузка в R2 — переменные LAUNCHER_R2_*.',
+        'Архив или .exe (макс. 150 МБ). На своём сервере проще всего: скопировать файл в каталог public/launcher/ (отдаётся как /launcher/…, без лимита на загрузку). Или LAUNCHER_DOWNLOAD_URL / R2 + LAUNCHER_PUBLIC_URL_BASE; для R2 — LAUNCHER_R2_*.',
       launcher_select_file: 'ВЫБРАТЬ ФАЙЛ (.EXE / .ZIP / .7Z)',
       launcher_uploaded: 'Лаунчер загружен',
       launcher_not_uploaded: 'Не загружен',
       launcher_size: 'Размер',
       launcher_cdn: 'Файл лаунчера на CDN (R2)',
+      launcher_public_folder: 'Лаунчер в public/launcher (статика)',
     }
   }
 };

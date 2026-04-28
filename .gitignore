@@ -33,6 +33,12 @@ yarn-error.log*
 # launcher uploads (stored in data/launcher/)
 /data/
 
+# ручная выкладка лаунчера (копируйте .exe в public/launcher/ на сервере)
+/public/launcher/*.exe
+/public/launcher/*.zip
+/public/launcher/*.7z
+!/public/launcher/.gitkeep
+
 # env files (can opt-in for committing if needed)
 .env*
 

@@ -8,6 +8,9 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
+    # Лаунчер на хосте в /root/warborn/public/launcher — иначе контейнер его не видит
+    volumes:
+      - ./public/launcher:/app/public/launcher:ro
 
   db:
     image: mariadb:11
@@ -16,8 +19,6 @@ services:
     environment:
       MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-warborn}
       MARIADB_DATABASE: warborn
-    ports:
-      - "127.0.0.1:3306:3306"
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s

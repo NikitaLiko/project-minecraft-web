@@ -12,7 +12,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
-RUN npm run build
+RUN printf 'DATABASE_URL=mysql://placeholder:placeholder@localhost:3306/warborn\nJWT_SECRET=build-placeholder\nTURNSTILE_SECRET_KEY=build-placeholder\nNEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAACLjXINIkYN71xn9\n' > .env && npm run build && rm .env
 
 # ── Stage 3: Production runner ──
 FROM base AS runner
@@ -21,6 +21,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+RUN apk add --no-cache openssl
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
